@@ -41,7 +41,7 @@ U8X8_SSD1306_128X32_UNIVISION_SW_I2C u8x8(/* clock=*/ SCL, /* data=*/ SDA, /* re
 //---------------------------------------------------------------------------
 //These let you disable serial outputs or display
 //#define RUN_DISPLAY;
-#define DEBUG_SERIAL
+//#define DEBUG_SERIAL
 //----------------------------------------------------------------------------
 void setup()
 {
@@ -79,9 +79,11 @@ void setup()
 //--------------------Timer Compare Match Code---------------------------
 // initialize Timer1
 cli();          // disable global interrupts while doing this
+
 TCCR1A = 0;     // set entire TCCR1A register to 0
 TCCR1B = 0;     // same for TCCR1B
-
+TCCR1C = 0;     // Added for the ATTINY84
+TCNT1 = 0;
 // set compare match register to desired timer count:
 OCR1A = advance; //Initially setting OCR1A to zero because advance is declared as zero
 
@@ -113,7 +115,7 @@ void hallSensor_interrupt()
 //--------------------------------------------------
 //Timer1 Compare Match ISR: This routine fires at the end of the icnition timing delay period
 
-ISR(TIMER1_COMPA_vect)
+ISR(TIM1_COMPA_vect)
 {
   //global disable interrupts
   cli();
