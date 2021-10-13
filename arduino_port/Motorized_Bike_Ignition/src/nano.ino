@@ -6,14 +6,14 @@ Has floating input issue but will be resolved later.
 Currently compiles way faster than the original, may due to optimization.
 */
 
-#include <Wire.h>
+//#include <Wire.h>
 //--------------------------------------------
 //CTC Libraries, which are NOT used, are they?
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <Arduino.h>
-#include <U8x8lib.h>
-U8X8_SSD1306_128X32_UNIVISION_SW_I2C u8x8(/* clock=*/ SCL, /* data=*/ SDA, /* reset=*/ U8X8_PIN_NONE);   // Adafruit Feather ESP8266/32u4 Boards + FeatherWing OLED
+//#include <U8x8lib.h>
+//U8X8_SSD1306_128X32_UNIVISION_SW_I2C u8x8(/* clock=*/ SCL, /* data=*/ SDA, /* reset=*/ U8X8_PIN_NONE);   // Adafruit Feather ESP8266/32u4 Boards + FeatherWing OLED
 
 //---------------------------------------------------------------------------
     volatile unsigned long currentMicros;
@@ -21,9 +21,9 @@ U8X8_SSD1306_128X32_UNIVISION_SW_I2C u8x8(/* clock=*/ SCL, /* data=*/ SDA, /* re
     int rpm =0;    
    //Assigned Pins
     const int timer1Pin = 7;
-    const int triggerPin = 8;
-    const int strobeLed = 13;
-    const int interruptPin = 3;
+    const int triggerPin = 3;
+    const int strobeLed = 5;
+    const int interruptPin = PCINT0;
     const int blinkPin = 5;
    //
     volatile unsigned long delta;
@@ -74,7 +74,7 @@ void setup()
 //--------------------------  
 //Assigns pin 3 to an interrupt pin, DIRECT PINS ONLY WORK ON UNO
 //Looks for a falling wave form or the tail end of the magnet
- attachInterrupt(digitalPinToInterrupt(interruptPin), hallSensor_interrupt, FALLING); 
+ attachInterrupt(PCINT0, hallSensor_interrupt, FALLING); 
 
 //--------------------Timer Compare Match Code---------------------------
 // initialize Timer1
@@ -156,7 +156,6 @@ void loop()
  advance = ((((180  + sparkTimingDegrees)* oneDegree)-3000)/4); //This divide by 4 works well,
 //but still gives me OCR1A overlfow at about 127 rpm, but I can live with that.
  OCR1A = advance; 
-
  #ifdef RUN_DISPLAY
  displayRPM_Display();
  #endif
