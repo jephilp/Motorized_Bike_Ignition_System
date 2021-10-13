@@ -83,7 +83,6 @@ cli();          // disable global interrupts while doing this
 TCCR1A = 0;     // set entire TCCR1A register to 0
 TCCR1B = 0;     // same for TCCR1B
 TCCR1C = 0;     // Added for the ATTINY84
-TCNT1 = 0;
 // set compare match register to desired timer count:
 OCR1A = advance; //Initially setting OCR1A to zero because advance is declared as zero
 
