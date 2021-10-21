@@ -12,19 +12,16 @@ Currently compiles way faster than the original, may due to optimization.
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <Arduino.h>
-//#include <U8x8lib.h>
-//U8X8_SSD1306_128X32_UNIVISION_SW_I2C u8x8(/* clock=*/ SCL, /* data=*/ SDA, /* reset=*/ U8X8_PIN_NONE);   // Adafruit Feather ESP8266/32u4 Boards + FeatherWing OLED
-
 //---------------------------------------------------------------------------
     volatile unsigned long currentMicros;
     volatile unsigned long previousStartTime;
     int rpm =0;    
    //Assigned Pins
     const int timer1Pin = 7;
-    const int triggerPin = 3;
+    const int triggerPin = 8;
     const int strobeLed = 5;
-    const int interruptPin = PCINT0;
-    const int blinkPin = 5;
+    const int interruptPin = 3;
+    const int blinkPin = triggerPin;
    //
     volatile unsigned long delta;
     volatile unsigned long  advance = 0; 
@@ -38,43 +35,21 @@ Currently compiles way faster than the original, may due to optimization.
     volatile boolean engineRunning =false;  //Opposite of engineStopped; To be used wherever I need it
     volatile int sparkTimingDegrees = 0;
 
-//---------------------------------------------------------------------------
-//These let you disable serial outputs or display
-//#define RUN_DISPLAY;
-//#define DEBUG_SERIAL
 //----------------------------------------------------------------------------
 void setup()
 {
-   pinMode(blinkPin, OUTPUT);
-   digitalWrite(blinkPin,HIGH);
-   delay(1000);
-   digitalWrite(blinkPin,LOW);
-   delay(1000);
-   digitalWrite(blinkPin,HIGH);
-   delay(1000);
-   digitalWrite(blinkPin,LOW);
-  #ifdef RUN_DISPLAY
-    u8x8.begin();
-    u8x8.setPowerSave(0);
-    //With this font the only usable lines are 0-2, anything below is cut
-    u8x8.setFlipMode(1);
-    u8x8.clearDisplay();
-    u8x8.setFont(u8x8_font_amstrad_cpc_extended_f);
-    u8x8.drawString(0,1,"RPM: ");
-  #endif
+   
     
   pinMode(triggerPin, OUTPUT);
   pinMode(timer1Pin, OUTPUT);
   pinMode(strobeLed, OUTPUT);
-  #ifdef DEBUG_SERIAL
-  Serial.begin(115200);
-  #endif
-//--------------------------- 
-
+  pinMode(interruptPin,INPUT);
+  blink(1000);
+  blink(1000);
 //--------------------------  
 //Assigns pin 3 to an interrupt pin, DIRECT PINS ONLY WORK ON UNO
 //Looks for a falling wave form or the tail end of the magnet
- attachInterrupt(PCINT0, hallSensor_interrupt, FALLING); 
+ attachInterrupt(digitalPinToInterrupt(interruptPin), hallSensor_interrupt, FALLING); 
 
 //--------------------Timer Compare Match Code---------------------------
 // initialize Timer1
@@ -106,7 +81,7 @@ void hallSensor_interrupt()
   unsigned long etCorrected =elapsedTime +1980;
   oneDegree = etCorrected/360.0;
   previousStartTime = currentMicros;
-  
+  blink(500);
   //Start timer1, using Prescale value of 64
   TCCR1B = _BV(CS00) | _BV(CS01); 
 }  
@@ -121,30 +96,26 @@ ISR(TIM1_COMPA_vect)
   TCCR1B &= ~(_BV(CS10) | _BV(CS11) | _BV(CS12)); // Stop the counter 
   TCNT1 = 0; //Rest the counter to zero
   
-  digitalWrite(7, !digitalRead(7)); //This line is here for debugging, only to toggle an LED on Pin 7
-                                   //whenever timer1 reaches compare match to prove that the timer IS working
-  makeSparks(); //Coil charging function.  
+  blink(3000);                                //whenever timer1 reaches compare match to prove that the timer IS working
+  //makeSparks(); //Coil charging function.  
   sei();   //Global enable interrupts 
 }
 
 //-------------------------------------------------------------------------------
 //Here's where the sparks are made; Coil Charging begins for a set time,
 //times out, and ends with a spark and a Strobe LED
+/*
 void makeSparks()
 {
     if(sparkOn)
   {
-   digitalWrite(triggerPin, HIGH); //This is where coil charging begins
+   digitalWrite(blinkPin, HIGH); //This is where coil charging begins
    delayMicroseconds(3000); //This fixes Coil Charge peroid at 3 milliseconds (strobe 50 usec + 2950 usec)
-   digitalWrite(triggerPin, LOW);  //This is where the spark actually occurs.
-   
-   digitalWrite(strobeLed, HIGH);
-   delayMicroseconds(50); //This is the on-period for the strobe.  
-   digitalWrite(strobeLed, LOW);   
+   digitalWrite(blinkPin, LOW);  //This is where the spark actually occurs.  
   }
   
 }
-
+*/
 //--------------Main Loop To Calculate RPM, Update LCD Display and Serial Monitor----------------
 void loop()
 {
@@ -155,132 +126,23 @@ void loop()
  advance = ((((180  + sparkTimingDegrees)* oneDegree)-3000)/4); //This divide by 4 works well,
 //but still gives me OCR1A overlfow at about 127 rpm, but I can live with that.
  OCR1A = advance; 
- #ifdef RUN_DISPLAY
- displayRPM_Display();
- #endif
- #ifdef DEBUG_SERIAL
- displayRPM_Serial(); //Much shorter than I2C LCD.
- #endif
+
 //Ignition delay calculations here:
 //---------------------------------
 
-if (rpm <130)
+if (rpm <600)
    {
     //0 to 100 rpms; too slow, no sparks
     sparkOn = false;
     sparkTimingDegrees = 0;
    }
 else
-if (rpm < 750)
+if (rpm > 600)
    {
      // 101 to 750 rpms; cranking, make .5 degree advanced sparks
     advancePeriod = (oneDegree * -.5);
     sparkOn = true;
     sparkTimingDegrees = -.5;
-   }
-else
-if (rpm < 1001)
-   {
-    // 750 to 1001 rpms; running okay, make between 4 and 7
-    advancePeriod = (oneDegree *-7);
-    sparkOn = true;
-    sparkTimingDegrees = -7;
-   }
-else
-if (rpm < 1500)
-   {
-    // 1001 to 1500 rpms; running okay, 15 point added because "smoothing"
-    advancePeriod = (oneDegree *-15);
-    sparkOn = true;
-    sparkTimingDegrees = -15;
-   }
-else
-if (rpm < 2000)
-   {
-    // 1501 to 2000 rpms; running okay, make 20 degree advanced sparks
-    advancePeriod = (oneDegree *-20);
-    sparkOn = true;
-    sparkTimingDegrees = -20;
-   }
-if (rpm < 3000)
-   {
-    // 2001 to 3000 rpms; running okay, make 22 to 22.5 degree advanced sparks
-    advancePeriod = (oneDegree *-22);
-    sparkOn = true;
-    sparkTimingDegrees = -22;
-   }
-else
-if (rpm < 4000)
-   {
-    // 3001 to 4000 rpms; running okay, make 21-23 degree advanced sparks
-    advancePeriod = (oneDegree *-21);
-    sparkOn = true;
-    sparkTimingDegrees = -21;
-   }
-else
-if (rpm < 5000)
-   {
-    // 4001 to 5000 rpms; running okay, make 19-21.5 degree advanced sparks
-    advancePeriod = (oneDegree *-20);
-    sparkOn = true;
-    sparkTimingDegrees = -20;
-   }
-else
-if (rpm < 6000)
-   {
-    // 5001 to 6000 rpms; running okay, make 16-19 degree advanced sparks
-    advancePeriod = (oneDegree *-17.5);
-    sparkOn = true;
-    sparkTimingDegrees = -17.5;
-   }
-else
-if (rpm < 7000)
-   {
-    // 6001 to 7000 rpms; running okay, make 12-16 degree advanced sparks
-    advancePeriod = (oneDegree *-14);
-    sparkOn = true;
-    sparkTimingDegrees = -14;
-   }
-else
-if (rpm < 8000)
-   {
-    // 7001 to 8000 rpms; running okay, make 9-13 degree advanced sparks
-    advancePeriod = (oneDegree *-11);
-    sparkOn = true;
-    sparkTimingDegrees = -11;
-   }
-else
-if (rpm < 9000)
-   {
-    // 8001 to 9000 rpms; running okay, make 5.8-10 degree advanced sparks
-    advancePeriod = (oneDegree *-8);
-    sparkOn = true;
-    sparkTimingDegrees = -8;
-   }
-else
-if (rpm < 10000)
-   {
-    // 9001 to 10000 rpms; running okay, make 7 degree advanced sparks
-    advancePeriod = (oneDegree *-7);
-    sparkOn = true;
-    sparkTimingDegrees = -7;
-   }
-else
-
-
-if (rpm < 19000)
-   {
-     //retard spark to 40 degrees
-    advancePeriod = (oneDegree * 40);
-    sparkOn = true; 
-    sparkTimingDegrees = 40;
-  }
-else
-if (rpm < 20000)
-//if (advanceRange <(5172 - 20))
-   {// 5801 to infinity rpms; hard overspeed range; no sparks
-    //sparkOn = false;
-    sparkTimingDegrees = 60;
    }
 
 //End ignition delay code
@@ -288,38 +150,13 @@ if (rpm < 20000)
 //Last part of Code to measure loop time
     unsigned long end = micros();
    delta = end - startLoopCount;
- //End of Code to measure loop time    
+ //End of Code to measure loop time  
 }
 //------------------------------------------------------------
 //End of the Loop-----End of the Loop----End Of The Loop====
 //-----------------------------------------------------------
-//Runs the i2c display, SSD1306
-//Needs to be tweaked to allow high refresh rate with no overflow
-//Currently has overflow errors
-#ifdef RUN_DISPLAY
-void displayRPM_Display()
-{
-  u8x8.setFont(u8x8_font_amstrad_cpc_extended_r);
-  u8x8.setCursor(8, 1);
-  u8x8.print(rpm);
+static void blink(int blinkTime){
+   digitalWrite(blinkPin,HIGH);
+   delay(blinkTime);
+   digitalWrite(blinkPin,LOW);
 }
-#endif
-//Serial output debugging
-#ifdef DEBUG_SERIAL
-void displayRPM_Serial()
-{
-Serial.print(rpm);
-/*Serial.print("  ");
-Serial.print(delta);
-Serial.print("  ");
-Serial.print(oneDegree);
-Serial.print("  ");
-Serial.print(OCR1A);
-Serial.print("  ");
-Serial.print(OCR1A/rpm);
-Serial.print("  ");
-Serial.println(rpm/OCR1A);
-Serial.print("  ");*/
-Serial.println(sparkTimingDegrees);
-}
-#endif
