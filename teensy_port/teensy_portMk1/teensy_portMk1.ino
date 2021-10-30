@@ -1,3 +1,8 @@
+//teensy_portMk1
+//Fully functional, tested up to 20,000rpm on the bench
+//Accuracy at 48Mhz clock, fastest with LTO, is +-40us
+//Will have minor changes but nothing will be changed functionally
+//Continued in Mk2
 //Teensy LC code from tested_running
 //Written by Jack Philp on 10/28/21
 //Hopefully will be functional on the 4.0 and 3.6
