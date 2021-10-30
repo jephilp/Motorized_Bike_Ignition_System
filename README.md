@@ -4,7 +4,8 @@
 * [Setup](#setup)
 
 ## General info
-This is an ignition system designed for motorized bikes. It runs off of a Teensy LC connected to a coil-on-plug through a conversion board. Mk2 is the most up-to-date
+This is an ignition system designed for motorized bikes. It runs off of a Teensy LC connected to a coil-on-plug through a conversion board. 
+Mk2 is the most up-to-date
 	
 ## Technologies
 Project is created with:
