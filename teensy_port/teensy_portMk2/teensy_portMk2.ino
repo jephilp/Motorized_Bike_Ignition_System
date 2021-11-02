@@ -229,7 +229,7 @@ if (rpm < 7000)
     sparkOn = true;
     lowRpm = 6001;
     highRpm = 7000;
-    lowDeg = -20.2;
+    lowDeg = -19.5;
     highDeg = -18;
     //sparkTimingDegrees = -18;
    }
