@@ -33,7 +33,7 @@
     double calcDelta;
 
 void setup() {
-  heartbeatTimer.begin(heartbeat,1000000);
+  heartbeatTimer.begin(heartbeat,100000);
   heartbeatTimer.priority(1);
   pinMode(outputPin, OUTPUT);
   pinMode(inputTrigger, INPUT);

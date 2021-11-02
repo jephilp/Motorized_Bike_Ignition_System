@@ -31,7 +31,7 @@
     double calcDelta;
 
 void setup() {
-  heartbeatTimer.begin(heartbeat,1000000);
+  heartbeatTimer.begin(heartbeat,100000);
   heartbeatTimer.priority(1);
   pinMode(outputPin, OUTPUT);
   pinMode(inputTrigger, INPUT);
@@ -92,20 +92,23 @@ void makeSparks()
   sei();   //Global enable interrupts 
 }
 void heartbeat(){
+  /*
   Serial.println("Heartbeat");
   Serial.print("RPM:");
   Serial.println(rpm);
   Serial.print("oneDegree: ");
   Serial.println(oneDegree);
   Serial.print("Timing in Degrees:");
-  Serial.println(sparkTimingDegrees);
+  Serial.println(-sparkTimingDegrees);
   Serial.print("Loop Delta: ");
   Serial.println(delta);
   Serial.print("Calc Delta: ");
   Serial.println(calcDelta);
   Serial.print("Timing Delay: ");
-  Serial.println(advance);
+  Serial.println(advance-150);
   Serial.println();
+  */
+  Serial.println(-sparkTimingDegrees);
 }
 //--------------Main Loop To Calculate RPM, Update LCD Display and Serial Monitor----------------
 void loop()
@@ -115,7 +118,7 @@ void loop()
   
 //End of Code to measure loop time 
  rpm =1000000 * 60/(oneDegree * 360); // time for one revolution;
- sparkTimingDegrees = map(rpm,lowRpm,lowDeg,highRpm,highDeg);
+ sparkTimingDegrees = (rpm - lowRpm) * (highDeg - lowDeg) / (highRpm -  lowRpm) + lowDeg;
  advance = ((((180  + sparkTimingDegrees)* oneDegree)-3000+delta)/4); //This divide by 4 works well,
 //---------------------------------------------------
 //This has been changed from Mk1 to incorporate map()
