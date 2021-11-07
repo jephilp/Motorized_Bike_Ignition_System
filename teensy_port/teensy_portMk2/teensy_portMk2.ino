@@ -5,7 +5,6 @@
 //Hopefully will be functional on the 4.0 and 3.6
 #include <Arduino.h>
 //These run the interrupts and create the loop time
-    IntervalTimer sparkTimer;
     IntervalTimer heartbeatTimer;
     //These replace the subtraction and just use time counters
     elapsedMicros sinceInterrupt;
@@ -50,47 +49,41 @@ void setup() {
 //------------------------------------------------------------------------
 void beam_interrupt()  
 { 
+  //Turns off interrupts so that the function runs without issue
+  cli();
+  //Records calculation time
   calculationDelta = 0;
+  
   //Develop "oneDegree" by counting the time between N Magnets on the rotor
   //This is THE KEY value I use to calculate ignition timing and rpm
   oneDegree = (float(sinceInterrupt)+2030)/360;
-  sinceInterrupt = 0;
+  rpm =1000000 * 60/(oneDegree * 360); // time for one revolution;
+  sparkTimingDegrees = (rpm - lowRpm) * (highDeg - lowDeg) / (highRpm -  lowRpm) + lowDeg;//Pulls these values from the the main loop
+  advance = ((((180  + sparkTimingDegrees)* oneDegree)-3000+delta)/4); //Calculates the advance
+  //Checks how long it took to calculate this interrupt
+  calcDelta = calculationDelta;
   
-  //Start timer
-  //This will have the timer wait until the time
-  //put into advance period is reached or after it.
-  sparkTimer.begin(makeSparks, advance); 
-  
-  //Priority is set to zero so that heartbeat can't interrupt it.
-  sparkTimer.priority(0);
-}  
-
-//--------------------------------------------------
-//Timer1 Compare Match ISR: This routine fires at the end of the icnition timing delay period
-void makeSparks()
-{
-  //Turns off interrupts so that the function runs without issue
-  cli();
-  
-  //Stops the timer and sets it to zero
-  sparkTimer.end();
-
+  //Uses a delay instead of the interrupt
+  delayMicroseconds(advance);
   //Checks to see if spark on condition is met
     if(sparkOn)
   {
    //digitalWriteFast is a teensy high speed function
-   digitalWriteFast(outputPin, HIGH); //This is where coil charging begins
+   digitalWrite(outputPin, HIGH); //This is where coil charging begins
    delayMicroseconds(3000); //This fixes Coil Charge peroid at 3 milliseconds (strobe 50 usec + 2950 usec)
-   digitalWriteFast(outputPin, LOW);  //This is where the spark actually occurs.
+   digitalWrite(outputPin, LOW);  //This is where the spark actually occurs.
    
    //digitalWriteFast(strobeLed, HIGH);
    //delayMicroseconds(50); //This is the on-period for the strobe.  
    //digitalWriteFast(strobeLed, LOW);   
   }
-  //Checks how long it took to calculate this interrupt
-  calcDelta = calculationDelta;
-  sei();   //Global enable interrupts 
-}
+  
+  
+  //Resets the timer
+  sinceInterrupt = 0;
+  
+  sei();   //Reenables interrupts 
+}  
 void heartbeat(){
   /*
   Serial.println("Heartbeat");
@@ -115,11 +108,6 @@ void loop()
 {
 //Beginning of Code to measure loop time
   loopDelta = 0; 
-  
-//End of Code to measure loop time 
- rpm =1000000 * 60/(oneDegree * 360); // time for one revolution;
- sparkTimingDegrees = (rpm - lowRpm) * (highDeg - lowDeg) / (highRpm -  lowRpm) + lowDeg;
- advance = ((((180  + sparkTimingDegrees)* oneDegree)-3000+delta)/4); //This divide by 4 works well,
 //---------------------------------------------------
 //This has been changed from Mk1 to incorporate map()
 //Completely removed in loop calculation.
@@ -143,7 +131,6 @@ if (rpm < 750)
     highRpm = 4000;
     lowDeg = 0;
     highDeg = -5;
-    //sparkTimingDegrees = -5;
    }
 else
 if (rpm < 1000)
@@ -154,7 +141,6 @@ if (rpm < 1000)
     highRpm = 1000;
     lowDeg = -5;
     highDeg = -7;
-    //sparkTimingDegrees = -7;
    }
 else
 if (rpm < 1500)
@@ -165,7 +151,6 @@ if (rpm < 1500)
     highRpm = 1500;
     lowDeg = -7;
     highDeg = -16.5;
-    //sparkTimingDegrees = -16.5;
    }
 else
 if (rpm < 2000)
@@ -176,7 +161,6 @@ if (rpm < 2000)
     highRpm = 2000;
     lowDeg = -16.5;
     highDeg = -19;
-    //sparkTimingDegrees = -19;
    }
 else
 if (rpm < 3000)
@@ -187,7 +171,6 @@ if (rpm < 3000)
     highRpm = 3000;
     lowDeg = -19;
     highDeg = -20.2;
-    //sparkTimingDegrees = -20.2;
    }
 else
 if (rpm < 4000)
@@ -198,7 +181,6 @@ if (rpm < 4000)
     highRpm = 4000;
     lowDeg = -20.2;
     highDeg = -20.5;
-    //sparkTimingDegrees = -20.5;
    }
 else
 if (rpm < 5000)
@@ -209,7 +191,6 @@ if (rpm < 5000)
     highRpm = 5000;
     lowDeg = -20.5;
     highDeg = -20.2;
-    //sparkTimingDegrees = -20.2;
    }
 else
 if (rpm < 6000)
@@ -220,7 +201,6 @@ if (rpm < 6000)
     highRpm = 6000;
     lowDeg = -20.2;
     highDeg = -19.5;
-    //sparkTimingDegrees = -19.5;
    }
 else
 if (rpm < 7000)
@@ -231,7 +211,6 @@ if (rpm < 7000)
     highRpm = 7000;
     lowDeg = -19.5;
     highDeg = -18;
-    //sparkTimingDegrees = -18;
    }
 else
 if (rpm < 8000)
@@ -242,7 +221,6 @@ if (rpm < 8000)
     highRpm = 8000;
     lowDeg = -18;
     highDeg = -16.8;
-    //sparkTimingDegrees = -16.8;
    }
 else
 if (rpm < 9000)
@@ -253,7 +231,6 @@ if (rpm < 9000)
     highRpm = 9000;
     lowDeg = -16.8;
     highDeg = -15.2;
-    //sparkTimingDegrees = -15.2;
    }
 else
 if (rpm < 10000)
@@ -264,7 +241,6 @@ if (rpm < 10000)
     highRpm = 10000;
     lowDeg = -15.2;
     highDeg = -14;
-    //sparkTimingDegrees = -14;
    }
 else
 
