@@ -4,15 +4,19 @@
 //Written for use on a teensy LC
 //Hopefully will be functional on the 4.0 and 3.6
 #include <Arduino.h>
+//#include <avr/io.h>
+//#include <avr/interrupt.h>
 //These run the interrupts and create the loop time
+    IntervalTimer sparkTimer;
     IntervalTimer heartbeatTimer;
     //These replace the subtraction and just use time counters
     elapsedMicros sinceInterrupt;
     elapsedMicros loopDelta;
     elapsedMicros calculationDelta;
+    elapsedMicros dwell;
 //In use pins
-    const int inputTrigger = 8;
-    const int outputPin = 7;
+    const int inputTrigger = 7;
+    const int outputPin = 8;
 //These are the running volatile variables since an interrupt can corrupt them
     volatile int rpm =0;  
     volatile double delta;
@@ -31,6 +35,7 @@
 
 void setup() {
   heartbeatTimer.begin(heartbeat,100000);
+  sparkTimer.priority(0);
   heartbeatTimer.priority(1);
   pinMode(outputPin, OUTPUT);
   pinMode(inputTrigger, INPUT);
@@ -53,7 +58,7 @@ void beam_interrupt()
   cli();
   //Records calculation time
   calculationDelta = 0;
-  
+  //Serial.println("Interrupt Fire");
   //Develop "oneDegree" by counting the time between N Magnets on the rotor
   //This is THE KEY value I use to calculate ignition timing and rpm
   oneDegree = (float(sinceInterrupt)+2030)/360;
@@ -62,30 +67,15 @@ void beam_interrupt()
   advance = ((((180  + sparkTimingDegrees)* oneDegree)-3000+delta)/4); //Calculates the advance
   //Checks how long it took to calculate this interrupt
   calcDelta = calculationDelta;
-  
-  //Uses a delay instead of the interrupt
-  delayMicroseconds(advance);
-  //Checks to see if spark on condition is met
-    if(sparkOn)
-  {
-   //digitalWriteFast is a teensy high speed function
-   digitalWrite(outputPin, HIGH); //This is where coil charging begins
-   delayMicroseconds(3000); //This fixes Coil Charge peroid at 3 milliseconds (strobe 50 usec + 2950 usec)
-   digitalWrite(outputPin, LOW);  //This is where the spark actually occurs.
-   
-   //digitalWriteFast(strobeLed, HIGH);
-   //delayMicroseconds(50); //This is the on-period for the strobe.  
-   //digitalWriteFast(strobeLed, LOW);   
-  }
-  
-  
   //Resets the timer
   sinceInterrupt = 0;
-  
+  //Starts secondary spark timer
+  sparkTimer.begin(sparkFire,advance);
   sei();   //Reenables interrupts 
 }  
+
 void heartbeat(){
-  /*
+  
   Serial.println("Heartbeat");
   Serial.print("RPM:");
   Serial.println(rpm);
@@ -100,8 +90,8 @@ void heartbeat(){
   Serial.print("Timing Delay: ");
   Serial.println(advance-150);
   Serial.println();
-  */
-  Serial.println(-sparkTimingDegrees);
+  
+  //Serial.println(-sparkTimingDegrees);
 }
 //--------------Main Loop To Calculate RPM, Update LCD Display and Serial Monitor----------------
 void loop()
