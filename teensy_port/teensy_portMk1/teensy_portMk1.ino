@@ -18,8 +18,8 @@
     //volatile unsigned long currentMicros;
     //volatile unsigned long previousStartTime;
 //In use pins
-    const int inputTrigger = 8;
-    const int outputPin = 7;
+    const int inputTrigger = 7;
+    const int outputPin = 8;
     //const int strobeLed = 13;
 //These are the running volatile variables since an interrupt can corrupt them
     volatile int rpm =0;  
