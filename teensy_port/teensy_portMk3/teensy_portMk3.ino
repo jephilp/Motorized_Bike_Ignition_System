@@ -7,7 +7,7 @@
 //Timing Array
 //New feature for ease of use and code shrinkage
 float timingDeg[] = {0,-5,-7,-16.5,-19,-20.2,-20.5,-20.2,-19.5,-18,-16.8,-15.2,-14};
-int rpm[] = {100,750,1000,1500,2000,3000,4000,5000,6000,7000,8000,9000,10000};
+const int rpmArray[] = {100,750,1000,1500,2000,3000,4000,5000,6000,7000,8000,9000,10000};
 //Index array[0 , 1 , 2  ,  3 ,  4 ,  5 ,  6 , 7  , 8  ,  9 , 10,  11 , 12  ]
 //These run the interrupts and create the loop time
     IntervalTimer sparkTimer;
@@ -120,131 +120,131 @@ void loop()
 //---------------------------------
 //Negative values are advance
 //Positive values are retard
-if (rpm <rpm[0])
+if (rpm <rpmArray[0])
    {
     //0 to 100 rpms; too slow, no sparks
     sparkOn = false;
     sparkTimingDegrees = 0;
    }
 else
-if (rpm < rpm[1])
+if (rpm < rpmArray[1])
    {
      // 101 to 750 rpms;
     sparkOn = true;
-    lowRpm = rpm[0]+1;
-    highRpm = rpm[1];
+    lowRpm = rpmArray[0]+1;
+    highRpm = rpmArray[1];
     lowDeg = timingDeg[0];
     highDeg = timingDeg[1];
    }
 else
-if (rpm < rpm[2])
+if (rpm < rpmArray[2])
    {
     // 751 to 1000 rpms;
     sparkOn = true;
-    lowRpm = rpm[1]+1;
-    highRpm = rpm[2];
+    lowRpm = rpmArray[1]+1;
+    highRpm = rpmArray[2];
     lowDeg = timingDeg[1];
     highDeg = timingDeg[2];
    }
 else
-if (rpm < rpm[3])
+if (rpm < rpmArray[3])
    {
     // 1001 to 1500 rpms;
     sparkOn = true;
-    lowRpm = rpm[2]+1;
-    highRpm = rpm[3];
+    lowRpm = rpmArray[2]+1;
+    highRpm = rpmArray[3];
     lowDeg = timingDeg[2];
     highDeg = timingDeg[3];
    }
 else
-if (rpm < rpm[4])
+if (rpm < rpmArray[4])
    {
     // 1501 to 2000 rpms;
     sparkOn = true;
-    lowRpm = rpm[3]+1;
-    highRpm = rpm[4];
+    lowRpm = rpmArray[3]+1;
+    highRpm = rpmArray[4];
     lowDeg = timingDeg[3];
     highDeg = timingDeg[4];
    }
 else
-if (rpm < rpm[5])
+if (rpm < rpmArray[5])
    {
     // 2001 to 3000 rpms;
     sparkOn = true;
-    lowRpm = rpm[4]+1;
-    highRpm = rpm[5];
+    lowRpm = rpmArray[4]+1;
+    highRpm = rpmArray[5];
     lowDeg = timingDeg[4];
     highDeg = timingDeg[5];
    }
 else
-if (rpm < rpm[6])
+if (rpm < rpmArray[6])
    {
     // 3001 to 4000 rpms;
     sparkOn = true;
-    lowRpm = rpm[5]+1;
-    highRpm = rpm[6];
+    lowRpm = rpmArray[5]+1;
+    highRpm = rpmArray[6];
     lowDeg = timingDeg[5];
     highDeg = timingDeg[6];
    }
 else
-if (rpm < rpm[7])
+if (rpm < rpmArray[7])
    {
     // 4001 to 5000 rpms;
     sparkOn = true;
-    lowRpm = rpm[6]+1;
-    highRpm = rpm[7];
+    lowRpm = rpmArray[6]+1;
+    highRpm = rpmArray[7];
     lowDeg = timingDeg[6];
     highDeg = timingDeg[7];
    }
 else
-if (rpm < rpm[8])
+if (rpm < rpmArray[8])
    {
     // 5001 to 6000 rpms;
     sparkOn = true;
-    lowRpm = rpm[7]+1;
-    highRpm = rpm[8];
+    lowRpm = rpmArray[7]+1;
+    highRpm = rpmArray[8];
     lowDeg = timingDeg[7];
     highDeg = timingDeg[8];
    }
 else
-if (rpm < rpm[9])
+if (rpm < rpmArray[9])
    {
     // 6001 to 7000 rpms;
     sparkOn = true;
-    lowRpm = rpm[8]+1;
-    highRpm = rpm[9];
+    lowRpm = rpmArray[8]+1;
+    highRpm = rpmArray[9];
     lowDeg = timingDeg[8];
     highDeg = timingDeg[9];
    }
 else
-if (rpm < rpm[10])
+if (rpm < rpmArray[10])
    {
     // 7001 to 8000 rpms;
     sparkOn = true;
-    lowRpm = rpm[9]+1;
-    highRpm = rpm[10];
+    lowRpm = rpmArray[9]+1;
+    highRpm = rpmArray[10];
     lowDeg = timingDeg[9];
     highDeg = timingDeg[10];
    }
 else
-if (rpm < rpm[11])
+if (rpm < rpmArray[11])
    {
     // 8001 to 9000 rpms;
     sparkOn = true;
-    lowRpm = rpm[10]+1;
-    highRpm = rpm[11];
-    lowDeg = rpm[10];
-    highDeg = rpm[11];
+    lowRpm = rpmArray[10]+1;
+    highRpm = rpmArray[11];
+    lowDeg = rpmArray[10];
+    highDeg = rpmArray[11];
    }
 else
-if (rpm < rpm[12])
+if (rpm < rpmArray[12])
    {
     // 9001 to 10000 rpms;
     sparkOn = true;
-    lowRpm = rpm[11]+1;
-    highRpm = rpm[12];
-    lowDeg = rpm[11];
-    highDeg = rpm[12];
+    lowRpm = rpmArray[11]+1;
+    highRpm = rpmArray[12];
+    lowDeg = rpmArray[11];
+    highDeg = rpmArray[12];
    }
 else
 
