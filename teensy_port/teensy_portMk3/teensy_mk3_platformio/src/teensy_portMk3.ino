@@ -6,7 +6,7 @@
 #include <Arduino.h>
 //Timing Array
 //New feature for ease of use and code shrinkage
-    float timingDeg[] = {0,-5,-7,-16.5,-19,-20.2,-20.5,-20.2,-19.5,-18,-16.8,-15.2,-14};
+const float timingDeg[] = {0,-5,-7,-16.5,-19,-20.2,-20.5,-20.2,-19.5,-18,-16.8,-15.2,-14};
 const int rpmArray[] = {100,750,1000,1500,2000,3000,4000,5000,6000,7000,8000,9000,10000};
            //Index array[0 , 1 , 2  ,  3 ,  4 ,  5 ,  6 , 7  , 8  ,  9 , 10,  11 , 12  ]
 //These run the interrupts and create the loop time
@@ -113,7 +113,7 @@ void loop()
 //Develop "oneDegree"
   rpm = 1000000 * 60/(oneDegree * 360); // time for one revolution;
   //This is a large float calculation so if you have a low power mcu change it to longs
-  sparkTimingDegrees = (rpm - lowRpm) * (highDeg - lowDeg) / (highRpm -  lowRpm) + lowDeg;//Pulls these values from the the main loop
+  sparkTimingDegrees = (((rpm - lowRpm) * (highDeg - lowDeg)) / ((highRpm -  lowRpm))) + lowDeg;//Pulls these values from the the main loop
 //Checks how long it took to calculate this interrupt
 //Follows the curve plotted from Jaguar CDI
 //Ignition delay calculations here:
@@ -233,8 +233,8 @@ if (rpm < rpmArray[11])
     sparkOn = true;
     lowRpm = rpmArray[10]+1;
     highRpm = rpmArray[11];
-    lowDeg = rpmArray[10];
-    highDeg = rpmArray[11];
+    lowDeg = timingDeg[10];
+    highDeg = timingDeg[11];
    }
 else
 if (rpm < rpmArray[12])
@@ -243,8 +243,8 @@ if (rpm < rpmArray[12])
     sparkOn = true;
     lowRpm = rpmArray[11]+1;
     highRpm = rpmArray[12];
-    lowDeg = rpmArray[11];
-    highDeg = rpmArray[12];
+    lowDeg = timingDeg[11];
+    highDeg = timingDeg[12];
    }
 else
 
