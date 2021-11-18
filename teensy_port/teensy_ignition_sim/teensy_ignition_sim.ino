@@ -11,7 +11,7 @@ const int inPin = 8;
 //This pin connects to pin 7 between a jumper
 const int waveInterrupter = 9;
 //Set the frequency HERE
-const int setFreq = 150;
+const int setFreq = 100;
 
 elapsedMicros waveDelta;
 elapsedMicros loopDelta;
