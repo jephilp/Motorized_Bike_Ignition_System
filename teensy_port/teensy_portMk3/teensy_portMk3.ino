@@ -6,9 +6,9 @@
 #include <Arduino.h>
 //Timing Array
 //New feature for ease of use and code shrinkage
-float timingDeg[] = {0,-5,-7,-16.5,-19,-20.2,-20.5,-20.2,-19.5,-18,-16.8,-15.2,-14};
-const int rpmArray[] = {100,750,1000,1500,2000,3000,4000,5000,6000,7000,8000,9000,10000};
-//Index array[0 , 1 , 2  ,  3 ,  4 ,  5 ,  6 , 7  , 8  ,  9 , 10,  11 , 12  ]
+const float timingDeg[] = {0,-5,-7,-16.5,-19,-20.2,-20.5,-20.2,-19.5,-18,-16.8,-15.2,-14};
+ const int rpmArray[] = {100,750,1000,1500,2000,3000,4000,5000,6000,7000,8000,9000,10000};
+//            Index array[0 , 1 , 2  ,  3 ,  4 ,  5 ,  6 , 7  , 8  ,  9 , 10,  11 , 12  ]
 //These run the interrupts and create the loop time
     IntervalTimer sparkTimer;
     IntervalTimer heartbeatTimer;
@@ -32,8 +32,7 @@ const int rpmArray[] = {100,750,1000,1500,2000,3000,4000,5000,6000,7000,8000,900
     volatile float highRpm;
     volatile float lowDeg;
     volatile float highDeg;
-//These variables run within interrupts so they are NOT volatile TESTING CURRENTLY FOR ISSUES
-    float calcDelta;
+    volatile float calcDelta;
 
 void setup() {
   heartbeatTimer.begin(heartbeat,100000);
@@ -58,7 +57,7 @@ void signalInterrupt()
   //Turns off interrupts so that the function runs without issue
   cli();
   oneDegree = (float(sinceInterrupt)+2030)/360;
-  advance = ((((180  + sparkTimingDegrees)* oneDegree)-3000+delta)/4); //Calculates the advance
+  advance = ((((180  + sparkTimingDegrees)* oneDegree)-(3000+(delta+calcDelta)))); //Calculates the advance
   //Starts secondary spark timer
   sinceInterrupt = 0;
   sparkTimer.begin(sparkFire,advance);
@@ -72,7 +71,7 @@ void sparkFire()
     if(sparkOn)
   {
    digitalWriteFast(outputPin, HIGH); //This is where coil charging begins
-   delayMicroseconds(3000); //This fixes Coil Charge peroid at 3 milliseconds (strobe 50 usec + 2950 usec)
+   delayMicroseconds(3000); //This fixes Coil Charge peroid at 3 milliseconds
    digitalWriteFast(outputPin, LOW);  //This is where the spark actually occurs.
    
    //digitalWriteFast(strobeLed, HIGH);
