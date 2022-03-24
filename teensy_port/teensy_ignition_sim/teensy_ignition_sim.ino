@@ -11,7 +11,7 @@ const int inPin = 8;
 //This pin connects to pin 7 between a jumper
 const int waveInterrupter = 9;
 //Set the frequency HERE
-const int setFreq = 100;
+int setFreq = 100;
 
 elapsedMicros waveDelta;
 elapsedMicros loopDelta;
@@ -27,10 +27,18 @@ void setup() {
   heartbeatTimer.begin(heartbeat,100000);
   attachInterrupt(digitalPinToInterrupt(inPin), timerEnd, RISING);
   attachInterrupt(digitalPinToInterrupt(9), waveInterrupt, RISING);
-  tone(outPin,setFreq);
+  //tone(outPin,setFreq);
 }
 
 void loop() {
+  int startFreq = 0;
+  int endFreq = 100;
+  for(int i = startFreq; i < endFreq; i=(i+0.1)){
+    setFreq = i;
+    tone(outPin,setFreq);
+    delay(10);
+  }
+  
 }
 
 void heartbeat(){

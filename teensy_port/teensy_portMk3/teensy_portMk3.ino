@@ -33,7 +33,8 @@ const int rpmArray[] = {100,750,1000,1500,2000,3000,4000,5000,6000,7000,8000,900
     volatile float highDeg;
     //volatile float calcDelta;
     
-
+//#define SERIAL_DEBUG
+#define DATALOG_DEBUG
 void setup() {
   heartbeatTimer.begin(heartbeat,100000);
   sparkTimer.priority(0);
@@ -85,24 +86,45 @@ void sparkFire()
    interrupts();
 }
 void heartbeat(){
+  #ifdef SERIAL_DEBUG
+    Serial.println("Heartbeat");
+    Serial.print("RPM:");
+    Serial.println(rpm);
+    Serial.print("oneDegree: ");
+    Serial.println(oneDegree);
+    Serial.print("Timing in Degrees:");
+    Serial.println(-sparkTimingDegrees);
+    Serial.print("Loop Delta: ");
+    Serial.println(delta);
+    //Serial.print("Calc Delta: ");
+    //Serial.println(calcDelta);
+    Serial.print("Timing Delay: ");
+    Serial.println(advance+44);
+    Serial.println();
+    
+    //Serial.println(-sparkTimingDegrees);
+  #endif
+
+  #ifdef DATALOG_DEBUG
+    char rpm_text[30];
+    char onedegree_text[30];
+    char sparktimingdegrees_text[30];
+    char delta_text[30];
+    char timing_delay_text[30];
   
-  Serial.println("Heartbeat");
-  Serial.print("RPM:");
-  Serial.println(rpm);
-  Serial.print("oneDegree: ");
-  Serial.println(oneDegree);
-  Serial.print("Timing in Degrees:");
-  Serial.println(-sparkTimingDegrees);
-  Serial.print("Loop Delta: ");
-  Serial.println(delta);
-  //Serial.print("Calc Delta: ");
-  //Serial.println(calcDelta);
-  Serial.print("Timing Delay: ");
-  Serial.println(advance+44);
-  Serial.println();
+    dtostrf(rpm, 10, 10, rpm_text);
+    dtostrf(oneDegree, 10, 10, onedegree_text);
+    dtostrf(-sparkTimingDegrees, 10, 10, sparktimingdegrees_text);
+    dtostrf(delta, 10, 10, delta_text);
+    dtostrf(advance, 10, 10, timing_delay_text);
   
-  //Serial.println(-sparkTimingDegrees);
+    char text[156];
+    snprintf(text, 156, "%s,%s,%s,%s,%s", rpm_text, onedegree_text, sparktimingdegrees_text, delta_text, timing_delay_text);
+    Serial.println(text);
+  #endif
+
 }
+
 //--------------Main Loop To Calculate RPM, Update LCD Display and Serial Monitor----------------
 void loop()
 {
@@ -233,8 +255,8 @@ if (rpm < rpmArray[11])
     sparkOn = true;
     lowRpm = rpmArray[10]+1;
     highRpm = rpmArray[11];
-    lowDeg = rpmArray[10];
-    highDeg = rpmArray[11];
+    lowDeg = timingDeg[10];
+    highDeg = timingDeg[11];
    }
 else
 if (rpm < rpmArray[12])
@@ -243,8 +265,8 @@ if (rpm < rpmArray[12])
     sparkOn = true;
     lowRpm = rpmArray[11]+1;
     highRpm = rpmArray[12];
-    lowDeg = rpmArray[11];
-    highDeg = rpmArray[12];
+    lowDeg = timingDeg[11];
+    highDeg = timingDeg[12];
    }
 else
 
